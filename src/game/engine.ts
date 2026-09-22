@@ -100,7 +100,7 @@ function makeObstacles(): Obstacle[] {
 function makeLoot(obstacles: Obstacle[]): Loot[] {
   const loot: Loot[] = [];
   const weapons: WeaponId[] = ["smg", "smg", "smg", "shotgun", "shotgun", "shotgun", "rifle", "rifle", "rifle", "rifle", "smg", "shotgun", "rifle", "pistol"];
-  const heals: Loot["kind"][] = Array(14).fill("bandage").concat(Array(9).fill("medkit"));
+  const heals: Loot["kind"][] = [...Array(14).fill("bandage"), ...Array(9).fill("medkit")];
   for (const kind of [...weapons, ...heals] as Loot["kind"][]) {
     const p = randomFree(obstacles, 60);
     loot.push({ id: nextId++, x: p.x, y: p.y, kind });
@@ -220,7 +220,7 @@ function hurt(s: GameState, target: Entity, dmg: number, attacker: Entity | null
 
 function pickup(s: GameState, e: Entity, onPickup?: (kind: Loot["kind"]) => void) {
   for (let i = s.loot.length - 1; i >= 0; i--) {
-    const l = s.loot[i];
+    const l = s.loot[i]!;
     if (dist(e.x, e.y, l.x, l.y) > 34) continue;
     if (l.kind === "medkit" || l.kind === "bandage") {
       if (e.hp >= e.maxHp) continue;
@@ -239,7 +239,7 @@ function pickup(s: GameState, e: Entity, onPickup?: (kind: Loot["kind"]) => void
 }
 
 function botThink(s: GameState, b: Entity, now: number) {
-  const thinkDelay = [380, 250, 140][b.difficulty];
+  const thinkDelay = [380, 250, 140][b.difficulty]!;
   if (now < b.thinkAt) return;
   b.thinkAt = now + thinkDelay + rand(0, 120);
 
@@ -249,7 +249,7 @@ function botThink(s: GameState, b: Entity, now: number) {
 
   // find nearest visible enemy
   let best: Entity | null = null;
-  let bestD = [420, 520, 640][b.difficulty];
+  let bestD = [420, 520, 640][b.difficulty]!;
   const all = [s.player, ...s.bots];
   for (const e of all) {
     if (e === b || !e.alive) continue;
@@ -264,9 +264,9 @@ function botThink(s: GameState, b: Entity, now: number) {
   if (best) {
     b.angle = Math.atan2(best.y - b.y, best.x - b.x);
     // difficulty: aim error & burst pattern
-    b.aimError = [0.22, 0.11, 0.045][b.difficulty];
+    b.aimError = [0.22, 0.11, 0.045][b.difficulty]!;
     if (now >= b.nextBurstAt) {
-      const burstLen = [260, 450, 800][b.difficulty] + rand(0, 200);
+      const burstLen = [260, 450, 800][b.difficulty]! + rand(0, 200);
       b.burstUntil = now + burstLen;
       b.nextBurstAt = now + burstLen + rand(300, 900) * (3 - b.difficulty) * 0.5;
     }
@@ -328,7 +328,7 @@ function botThink(s: GameState, b: Entity, now: number) {
     b.goalX = zone.cx + Math.cos(a) * r;
     b.goalY = zone.cy + Math.sin(a) * r;
   }
-  const a = Math.atan2(b.goalY - b.y, b.goalX - b.x);
+  const a = Math.atan2(b.goalY! - b.y, b.goalX - b.x);
   b.moveX = Math.cos(a); b.moveY = Math.sin(a);
   b.angle = a;
 }
@@ -354,7 +354,7 @@ export function updateGame(s: GameState, dtMs: number, input: InputState, onEven
       if (zone.phase < ZONE_PHASES.length) {
         const t = pickZoneTarget(zone, zone.phase);
         zone.targetCx = t.cx; zone.targetCy = t.cy; zone.targetRadius = t.radius;
-        zone.phaseEndsAt = now + ZONE_PHASES[zone.phase].wait;
+        zone.phaseEndsAt = now + (ZONE_PHASES[zone.phase]?.wait ?? 8000);
         onEvent?.("zoneWarn");
       } else {
         zone.phaseEndsAt = Infinity;
@@ -363,9 +363,9 @@ export function updateGame(s: GameState, dtMs: number, input: InputState, onEven
   }
   if (zone.shrinking) {
     const nextPhase = Math.min(zone.phase + 1, ZONE_PHASES.length - 1);
-    const total = ZONE_PHASES[nextPhase].shrink;
+    const total = ZONE_PHASES[nextPhase]!.shrink;
     const k = Math.min(1, dtMs / Math.max(1, zone.phaseEndsAt - now));
-    const startR = zone.phase < 0 ? WORLD : ZONE_PHASES[zone.phase].radius;
+    const startR = zone.phase < 0 ? WORLD : (ZONE_PHASES[zone.phase]?.radius ?? 120);
     const t = 1 - (zone.phaseEndsAt - now) / total;
     const tc = Math.min(1, Math.max(0, t));
     zone.radius = startR + (zone.targetRadius - startR) * tc;
@@ -434,7 +434,7 @@ export function updateGame(s: GameState, dtMs: number, input: InputState, onEven
 
   // --- bullets ---
   for (let i = s.bullets.length - 1; i >= 0; i--) {
-    const bl: Bullet = s.bullets[i];
+    const bl: Bullet = s.bullets[i]!;
     const step = Math.hypot(bl.vx, bl.vy) * dt;
     bl.x += bl.vx * dt;
     bl.y += bl.vy * dt;
