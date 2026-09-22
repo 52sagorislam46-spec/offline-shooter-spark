@@ -88,7 +88,7 @@ function makeObstacles(): Obstacle[] {
   // de-overlap big houses a bit
   for (let i = 0; i < obs.length; i++) {
     for (let j = i + 1; j < obs.length; j++) {
-      const a = obs[i], b = obs[j];
+    const a = obs[i]!, b = obs[j]!;
       if (a.kind === "house" && b.kind === "house" && dist(a.x, a.y, b.x, b.y) < 200) {
         b.x = Math.min(WORLD - 200, Math.max(200, b.x + 240));
       }
