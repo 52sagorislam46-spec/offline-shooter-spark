@@ -130,11 +130,11 @@ export function createGame(): GameState {
   for (let i = 0; i < 29; i++) {
     const p = randomFree(obstacles, 120);
     const diff = i < 12 ? 0 : i < 23 ? 1 : 2;
-    bots.push(makeEntity(nextId++, BOT_NAMES[i], p.x, p.y, false, diff));
+    bots.push(makeEntity(nextId++, BOT_NAMES[i] ?? `Bot${i}`, p.x, p.y, false, diff));
   }
   const zone: Zone = {
     cx: WORLD / 2, cy: WORLD / 2, radius: WORLD,
-    targetCx: WORLD / 2, targetCy: WORLD / 2, targetRadius: ZONE_PHASES[0].radius,
+    targetCx: WORLD / 2, targetCy: WORLD / 2, targetRadius: ZONE_PHASES[0]!.radius,
     phase: -1, phaseEndsAt: 8000, shrinking: false, damagePerSec: 2,
   };
   const t = pickZoneTarget(zone, 0);
